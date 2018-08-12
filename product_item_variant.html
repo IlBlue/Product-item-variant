@@ -1,0 +1,64 @@
+<div class="product-variant">
+	{% for option in product.options %}
+
+	{% assign options = option | downcase %}
+	{% assign product_variant = settings.product_variants | downcase %}
+
+	{% if product_variant contains options %}
+	<div class="item-variant">
+		{% unless options contains 'màu sắc' %}
+		<div class="item-variant-title">{{ options }}: </div>
+		{% endunless %}
+		{% assign option_index = forloop.index0 %}
+		{% assign values = '' %}
+
+		{% for variant in product.variants %}
+
+		{% assign value = variant.options[option_index] | downcase %}
+		{% unless values contains value %}
+		{% assign values = values | join: ',' | append: ',' | append: value | split: ',' %}
+		{% assign total = 0 %}
+		{% assign check_quantity = false %}
+		{% for variant1 in product.variants %}
+
+		{% assign variant2 = variant1.options[option_index] | downcase %}
+		{% if variant2 == value %}
+		{% if variant1.inventory_management == "bizweb" %}
+		{% if variant1.inventory_quantity != 0 %}
+		{% assign total = total | plus : variant1.inventory_quantity %}
+		{% elseif variant1.inventory_quantity == ' ' %}
+		{% if variant.inventory_policy == "continue" %}
+		{% assign check_quantity = true %}
+		{% endif %}
+		{% endif %}
+		{% else %}
+		{% assign check_quantity = true %}
+		{% endif %}
+		{% endif %}
+
+		{% endfor %}
+		{% if total > 0 or check_quantity %}
+		{% if options contains 'màu sắc' %}
+		{% for i in (1..10) %}
+		{% capture title_color %}color_{{ i }}{% endcapture %}
+		{% assign tt_color = settings[title_color] | downcase %}
+		{% if value == tt_color %}
+		{% capture value_color %}color_{{ i }}_c{% endcapture %}
+		<div class="tt-swatch-item swatch-item-color">
+			<span class="{{ tt_color | handle }}"></span>
+		</div>
+		{% endif %}
+		{% endfor %}
+		{% else %}
+		<div class="tt-swatch-item"><span>{{ value | upcase }}</span></div>
+
+		{% endif %}
+		{% endif %}
+		{% endunless %}
+
+		{% endfor %}
+	</div>
+	{% endif %}
+
+	{% endfor %}
+</div>
